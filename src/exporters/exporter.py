@@ -23,6 +23,10 @@ class Exporter(ConfigurableEntity):
         if not self.events:
             self.logger.error(f"Exporter '{self.name}' must have at least one event specified in the configuration")
 
+    def has_events(self, events: list[ExporterEvent]) -> bool:
+        """Evaluates whether this exporter has any of the specified events configured."""
+        return any(e in self.events for e in events)
+
     @abstractmethod
     def export_data(self, scan: ScanResult|None, filament: GenericFilament|None, reader : RfidReader):
         """Exports the given filament data associated with a scan result. The scan and filament may be None if the export is triggered by a read error or unrecognized tag."""
