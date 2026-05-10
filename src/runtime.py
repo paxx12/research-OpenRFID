@@ -78,13 +78,17 @@ class Runtime:
                     self.read_retries_left[i] = 0
                 elif self.config.auto_read_mode: # Auto-mode
                     logging.info(f"No tag detected on reader {reader.name}, but auto read mode is enabled, will retry")
+                    self._notify_exporters(None, None, reader, [ExporterEvent.TAG_READ_ERROR])
                 elif not retry: # Fatal non-retrable error
-                    logging.info(f"No tag detected on reader {reader.name}")
+                    logging.info(f"No tag detected on reader {reader.name}, and error is not retriable")
                     self._notify_exporters(None, None, reader, [ExporterEvent.TAG_READ_ERROR])
                     self.read_retries_left[i] = 0
+                elif self.read_retries_left[i] == 0:
+                    logging.info(f"No tag detected on reader {reader.name}, retries exhausted")
+                    self._notify_exporters(None, None, reader, [ExporterEvent.TAG_READ_ERROR])
                 else: # Transient error
-                    self.read_retries_left[i] -= 1
                     logging.info(f"No tag detected on reader {reader.name}, will retry, retries left: {self.read_retries_left[i]}")
+                    self.read_retries_left[i] -= 1
 
             time.sleep(self.config.read_interval_seconds)
 
